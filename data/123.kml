@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+    <Document>
+        <Style id="red">
+            <LineStyle>
+                <color>ff0000ff</color>
+                <width>3</width>
+            </LineStyle>
+        </Style>
+        <Style id="yellow">
+            <LineStyle>
+                <color>ff00ffff</color>
+                <width>3</width>
+            </LineStyle>
+        </Style>
+        <Style id="green">
+            <LineStyle>
+                <color>ff00ff00</color>
+                <width>3</width>
+            </LineStyle>
+        </Style>
+        <Style id="blue">
+            <LineStyle>
+                <color>ffff0000</color>
+                <width>3</width>
+            </LineStyle>
+        </Style>
+        <Style id="purple">
+            <LineStyle>
+                <color>ff800080</color>
+                <width>3</width>
+            </LineStyle>
+        </Style>
+        <Style id="pacman">
+            <IconStyle>
+                <Icon>
+                    <href>E:\Exersice\Ex4\data\pacmanIcon.png</href>
+                    <w>80</w>
+                    <h>80</h>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="fruit">
+            <IconStyle>
+                <Icon>
+                    <href>E:\Exersice\Ex4\data\fruitIcon.png</href>
+                    <w>80</w>
+                    <h>80</h>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Folder>
+            <name>Pacman Path</name>
+            <Placemark>
+                <TimeStamp>
+                    <when>2019-01-04T23:21:17</when>
+                </TimeStamp>
+                <styleUrl>#pacman</styleUrl>
+                <Point>
+                    <coordinates>35.20473967455884,32.10293433535471,0.0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <TimeStamp>
+                    <when>2019-01-04T23:21:17</when>
+                </TimeStamp>
+                <styleUrl>#fruit</styleUrl>
+                <Point>
+                    <coordinates>35.20442738399163,32.10516744897196,0.0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <TimeStamp>
+                    <when>2019-01-04T23:21:17</when>
+                </TimeStamp>
+                <styleUrl>#fruit</styleUrl>
+                <Point>
+                    <coordinates>35.205613706392185,32.10510557619938,0.0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <TimeStamp>
+                    <when>2019-01-04T23:21:17</when>
+                </TimeStamp>
+                <styleUrl>#fruit</styleUrl>
+                <Point>
+                    <coordinates>35.20650693737613,32.1051955729595,0.0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <TimeStamp>
+                    <when>2019-01-04T23:21:17</when>
+                </TimeStamp>
+                <styleUrl>#fruit</styleUrl>
+                <Point>
+                    <coordinates>35.20860742586183,32.10515619937694,0.0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <TimeStamp>
+                    <when>2019-01-04T23:21:17</when>
+                </TimeStamp>
+                <styleUrl>#fruit</styleUrl>
+                <Point>
+                    <coordinates>35.20984259683182,32.10517307376947,0.0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <TimeStamp>
+                    <when>2019-01-04T23:21:17</when>
+                </TimeStamp>
+                <styleUrl>#fruit</styleUrl>
+                <Point>
+                    <coordinates>35.21050554170272,32.104346228535825,0.0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <TimeStamp>
+                    <when>2019-01-04T23:21:17</when>
+                </TimeStamp>
+                <styleUrl>#fruit</styleUrl>
+                <Point>
+                    <coordinates>35.210526476803906,32.10337313856697,0.0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <TimeStamp>
+                    <when>2019-01-04T23:21:17</when>
+                </TimeStamp>
+                <styleUrl>#fruit</styleUrl>
+                <Point>
+                    <coordinates>35.20915173849267,32.10295127875389,0.0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <TimeStamp>
+                    <when>2019-01-04T23:21:17</when>
+                </TimeStamp>
+                <styleUrl>#fruit</styleUrl>
+                <Point>
+                    <coordinates>35.20815383200279,32.10265316448598,0.0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <TimeStamp>
+                    <when>2019-01-04T23:21:17</when>
+                </TimeStamp>
+                <styleUrl>#fruit</styleUrl>
+                <Point>
+                    <coordinates>35.20689074756455,32.10290628037383,0.0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <TimeStamp>
+                    <when>2019-01-04T23:21:17</when>
+                </TimeStamp>
+                <styleUrl>#fruit</styleUrl>
+                <Point>
+                    <coordinates>35.20473443214236,32.10293440436137,0.0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <styleUrl>#red</styleUrl>
+                <LineString>
+                    <coordinates>35.20473967455884,32.10293433535471,0.0
+35.20442738399163,32.10516744897196,0.0
+35.205613706392185,32.10510557619938,0.0
+35.20650693737613,32.1051955729595,0.0
+35.20860742586183,32.10515619937694,0.0
+35.20984259683182,32.10517307376947,0.0
+35.21050554170272,32.104346228535825,0.0
+35.210526476803906,32.10337313856697,0.0
+35.20915173849267,32.10295127875389,0.0
+35.20815383200279,32.10265316448598,0.0
+35.20689074756455,32.10290628037383,0.0
+35.20473443214236,32.10293440436137,0.0
+</coordinates>
+                </LineString>
+            </Placemark>
+        </Folder>
+    </Document>
+</kml>

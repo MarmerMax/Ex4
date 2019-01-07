@@ -2,11 +2,13 @@ package GUI;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.Graphics;
 import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.MenuItem;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -17,15 +19,15 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-
-
+import Coords.MyCoords;
 import Game.Game;
+import Geom.Point3D;
 import Objects.Pacman;
 import Objects.Ghost;
 import Objects.Fruit;
@@ -48,6 +50,8 @@ public class MyFrame extends JFrame implements MouseListener{
 	private int readyToStart = 0; //0 - need to chose file and create player, 1 = need to create player, 2 - ready
 
 	private int x, y;
+	private boolean doRotate = false;
+	private double dir = 0;
 
 	public MyFrame() {
 		try {
@@ -60,16 +64,34 @@ public class MyFrame extends JFrame implements MouseListener{
 
 	public void createGUI() throws IOException{
 		background = ImageIO.read(new File("data\\Ariel1.png"));
-		heightPercent = widthPercent = 1;
-		startHeight = background.getHeight();
-		startWidth = background.getWidth();
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+		if(screenSize.getWidth() < background.getWidth()) {
+			widthPercent = screenSize.getWidth() /  background.getWidth();
+			startWidth = (int)screenSize.getWidth();
+		}
+		else {
+			widthPercent = 1;
+			startWidth = background.getWidth();
+		}
+
+		if(screenSize.getHeight() < background.getHeight()) {
+			heightPercent = screenSize.getHeight() / background.getHeight();
+			startHeight = (int)screenSize.getHeight() + 50;
+		}
+		else {
+			heightPercent = 1;
+			startHeight = background.getHeight();
+		}
+		
 		height = startHeight;
 		width = startWidth;
 
-		System.out.println(background.getHeight() + " " + background.getWidth());
-		
+		//		System.out.println("screen size: " + screenSize.getHeight() + " x " + screenSize.getWidth());
+		//		System.out.println("background size: " + background.getHeight() + " x " + background.getWidth());
+
 		setVisible(true);
-		setSize(background.getWidth(),background.getHeight()+50);
+		setSize(startWidth,startHeight + 50);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		MenuBar menuBar = new MenuBar();
@@ -96,6 +118,7 @@ public class MyFrame extends JFrame implements MouseListener{
 
 		this.setMenuBar(menuBar);
 
+
 		/////////////////////file menu///////////////////////
 		fileItemOpen.addActionListener(new ActionListener() {
 			@Override
@@ -103,9 +126,8 @@ public class MyFrame extends JFrame implements MouseListener{
 				String fileName = readFileDialog();
 				game = new Game();
 				play = new Play(fileName);
-				play.setIDs(1,0,0);
-				game.initialization(play.getBoard());
-
+				play.setIDs(1);
+				game.initialization(play.getBoard());				
 				repaint();
 				readyToStart = 1;
 			}
@@ -125,7 +147,7 @@ public class MyFrame extends JFrame implements MouseListener{
 					createPacman = true;
 					readyToStart = 2;
 				}
-				else {
+				else if (readyToStart == 0){
 					String msg = "Please first choose the game file";
 					JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.INFORMATION_MESSAGE);
 				}
@@ -136,6 +158,41 @@ public class MyFrame extends JFrame implements MouseListener{
 		game1ItemStart.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if(game.getPlayer() != null) {
+					createPacman=false;
+					doRotate = true;
+					play.start();
+					Thread gamePlay = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							play();
+							RepaintThread win = new RepaintThread();
+							Thread my = new Thread(win);
+							my.start();
+						}
+						private void play() {
+							while(play.isRuning()) {
+								game.initialization(play.getBoard());
+								play.setInitLocation(game.getPlayer().getPoint().x(), game.getPlayer().getPoint().y());
+								play.rotate(dir);
+								try {
+									Thread.sleep(20);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+								ArrayList<String> board_data = new ArrayList<>();
+								board_data = play.getBoard();
+								//System.out.println(board_data.get(0));
+								repaint();
+							}
+						}
+					});
+					gamePlay.start();
+				}
+				else {
+					String msg = "Please first choose the game file and create Player";
+					JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.INFORMATION_MESSAGE);
+				}
 				//				if(pacmanList != null && fruitList != null && pathList != null && pacmanList.size() > 0 && fruitList.size() > 0) {
 				//					pool = Executors.newFixedThreadPool(pathList.size());
 				//					for(int i = 0; i < pathList.size(); i++) {
@@ -166,19 +223,19 @@ public class MyFrame extends JFrame implements MouseListener{
 	}
 
 	public void paint(Graphics g) {
-		g.drawImage(background, 0, 50, width, height + 50, this);
+		g.drawImage(background, 8, 50, width, height, this);
 		if(game != null) {
 			if(game.getPacmanList() != null) {
-				drawPacman(g);
+				//drawPacman(g);
 			}
 			if(game.getGhostList() != null) {
-				drawGhost(g);
+				//drawGhost(g);
 			}
 			if(game.getFruitList() != null) {
 				drawFruit(g);
 			}
 			if(game.getBoxList() != null) {
-				drawBox(g);
+				//drawBox(g);
 			}
 			if(game.getPlayer() != null) {
 				drawPlayer(g);
@@ -197,7 +254,7 @@ public class MyFrame extends JFrame implements MouseListener{
 			int dY = (int)(10.0 * heightPercent);
 			int imgSize = (int)(20.0 * ((widthPercent + heightPercent) / 2));
 			g.setColor(Color.YELLOW);
-			g.fillOval(xP - dX, 50 + yP - dY, imgSize, imgSize);
+			g.fillOval(8 + xP - dX, 50 + yP - dY, imgSize, imgSize);
 			index++;
 		}
 	}
@@ -213,7 +270,7 @@ public class MyFrame extends JFrame implements MouseListener{
 			int dY = (int)(15.0 * heightPercent);
 			int imgSize = (int)(30.0 * ((widthPercent + heightPercent) / 2));
 			g.setColor(Color.RED);
-			g.fillOval(xP - dX, 50 + yP - dY, imgSize, imgSize);
+			g.fillOval(8 + xP - dX, 50 + yP - dY, imgSize, imgSize);
 			index++;
 		}
 	}
@@ -229,7 +286,7 @@ public class MyFrame extends JFrame implements MouseListener{
 			int dY = (int)(5.0 * heightPercent);
 			int imgSize = (int)(10.0 * ((widthPercent + heightPercent) / 2));
 			g.setColor(Color.GREEN);
-			g.fillOval(xP - dX, 50 + yP - dY, imgSize, imgSize);
+			g.fillOval(8 + xP - dX, 50 + yP - dY, imgSize, imgSize);
 			index++;
 		}
 	}
@@ -244,7 +301,8 @@ public class MyFrame extends JFrame implements MouseListener{
 			int dY = (int)(17.5 * heightPercent);
 			int imgSize = (int)(35.0 * ((widthPercent + heightPercent) / 2));
 			g.setColor(Color.PINK);
-			g.fillOval(xP - dX, 50 + yP - dY, imgSize, imgSize);
+		//	System.out.println(xP + " " + yP);
+			g.fillOval(xP - dX, yP - dY, imgSize, imgSize);
 		}
 	}
 
@@ -262,7 +320,7 @@ public class MyFrame extends JFrame implements MouseListener{
 			int heightRect = (int)((double)Math.abs(coor1[1] - coor2[1]) * heightPercent);//height length
 
 			g.setColor(Color.BLACK);
-			g.fillRect(xP, 50 + yP, widthRect, heightRect);
+			g.fillRect(8 + xP, 50 + yP, widthRect, heightRect);
 			index++;
 		}
 	}
@@ -270,22 +328,40 @@ public class MyFrame extends JFrame implements MouseListener{
 	@Override
 	public void mouseClicked(MouseEvent arg) {
 		if(readyToStart == 2 && createPacman) {
-			x = arg.getX();//x by click
-			y = arg.getY();//y by click
+			x = (int)(arg.getX());//x by click
+			y = (int)(arg.getY());//y by click
 			boolean notBox = checkPlace(x, y);
 			if(notBox) {
-				int xP = (int)((double)x * ((1 + (1 - widthPercent)))); //change x to actually size
-				int yP = (int)((double)y * ((1 + (1 - heightPercent))) - 50); //change y to actually size
-				
+				int xP = (int)((double)x * (Math.pow(heightPercent, -1))); //change x to actually size
+				int yP = (int)((double)(y - 50) * (Math.pow(widthPercent, -1))); //change y to actually size
+
 				double [] playerCoordinates = fromPixelToLatLon(xP, yP);
+
+				//create player
 				game.createPlayer(playerCoordinates);
-				
+
+				//add player to game
+				play.setInitLocation(game.getPlayer().getPoint().x(), game.getPlayer().getPoint().y());
+
 				repaint();
 			}
 			else {
 				String msg = "Wrong place! Please try again!";
 				JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.INFORMATION_MESSAGE);
 			}
+		}
+		else if (doRotate) {
+			x = (int)(arg.getX());//x by click
+			y = (int)(arg.getY());//y by click
+			int xP = (int)((double)x * (Math.pow(heightPercent, -1))); //change x to actually size
+			int yP = (int)((double)(y - 50) * (Math.pow(widthPercent, -1))); //change y to actually size
+
+			double [] playerCoordinates = fromPixelToLatLon(xP, yP);
+			Point3D temp = new Point3D(playerCoordinates[0], playerCoordinates[1], 0);
+			MyCoords azimuth = new MyCoords();
+			double [] AED = azimuth.azimuth_elevation_dist(game.getPlayer().getPoint(), temp);
+			dir = AED[0];
+			play.rotate(dir); 
 		}
 		else if (readyToStart == 0) {
 			String msg = "Please first choose the game file";
@@ -296,13 +372,13 @@ public class MyFrame extends JFrame implements MouseListener{
 			JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
-	
+
 	private boolean checkPlace(int x, int y) {
-		
-		
+
+
 		return true;
 	}
-	
+
 	@Override
 	public void mousePressed(MouseEvent e) {}
 	@Override
@@ -328,20 +404,19 @@ public class MyFrame extends JFrame implements MouseListener{
 		String fileName = fd.getFile();
 		return folder + fileName;
 	}
-	
+
 	private double[] fromPixelToLatLon(int x, int y) {
 		double [] xy = new double[2];
-		double xStep = (35.212416 - 35.202369) / width; 
-		double yStep = (32.105728 - 32.101898) / height;
+		double xStep = (35.212416 - 35.202369) / startWidth; 
+		double yStep = (32.105728 - 32.101898) / startHeight;
 		xy[0] = 32.105728 - (yStep * y);
 		xy[1] = 35.202369 + (xStep * x);
 		return xy;
 	}
 
 	private int[] fromLatLonToPixel(double latitude, double longitude) {
-		//32.101898,35.202369,0.0,32.105728,35.212416
-		double mapHeight = 642;
-		double mapWidth = 1433;
+		double mapHeight = startHeight;
+		double mapWidth = startWidth;
 		double mapLatBottom = 32.101898;
 		double mapLngLeft = 35.202369;
 		double mapLngRight = 35.212416;
@@ -358,5 +433,19 @@ public class MyFrame extends JFrame implements MouseListener{
 		cc[0] = (int)x;
 		cc[1] = (int)y;
 		return cc;
+	}
+	
+	class RepaintThread implements Runnable{
+		@Override
+		public void run() {
+			while(play.isRuning()) {
+				try {
+					repaint();
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}	
 	}
 }

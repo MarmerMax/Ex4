@@ -17,29 +17,32 @@ public class Game {
 	private LinkedList<Box> boxList;
 	private Player player;
 
-	public Game() {
+	public Game() {}
+
+	public void initialization(ArrayList<String> objectsData) {
 		pacmanList = new LinkedList<>();
 		fruitList = new LinkedList<>();
 		ghostList = new LinkedList<>();
 		boxList = new LinkedList<>();
-		player = null;
-	}
-
-	public void initialization(ArrayList<String> objectsData) {
 		for(int i = 0; i < objectsData.size(); i++) {
 			String row = objectsData.get(i);
 			String [] data = row.split(",");
 			switch(row.charAt(0)) {
+			case 'M':
+				if(!data[2].equals("0") && !data[3].equals("0")) {
+					player = new Player(data[2], data[3], data[1]);
+					break;
+				}
 			case 'P':
-				Pacman pacman = new Pacman(data[2], data[3]);
+				Pacman pacman = new Pacman(data[2], data[3], data[1]);
 				pacmanList.add(pacman);
 				break;
 			case 'G':
-				Ghost ghost = new Ghost(data[2], data[3]);
+				Ghost ghost = new Ghost(data[2], data[3], data[1]);
 				ghostList.add(ghost);
 				break;
 			case 'F':
-				Fruit fruit = new Fruit(data[2], data[3]);
+				Fruit fruit = new Fruit(data[2], data[3], data[1]);
 				fruitList.add(fruit);
 				break;
 			case 'B':
@@ -53,7 +56,7 @@ public class Game {
 	}
 	
 	public void createPlayer(double [] coor) {
-		player = new Player(coor[0] + "", coor[1] + "");
+		player = new Player(coor[0] + "", coor[1] + "", 0 + "");
 	}
 	
 	public Player getPlayer() {

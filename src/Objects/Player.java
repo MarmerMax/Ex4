@@ -4,8 +4,8 @@ public class Player extends GameObject{
 	
 	private double score;
 	
-	public Player(String lat, String lon) {
-		super(lat,lon);
+	public Player(String lat, String lon, String id) {
+		super(lat,lon, id);
 	}
 	
 	public double getScore() {
