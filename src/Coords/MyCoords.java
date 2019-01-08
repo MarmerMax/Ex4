@@ -58,9 +58,9 @@ public class MyCoords implements coords_converter{
 		double tetha = Math.atan2(Math.sin(dLon) * Math.cos(p2.x()),
 				Math.cos(p1.x()) * Math.sin(p2.x()) - Math.sin(p1.x()) * Math.cos(p2.x()) * Math.cos(dLon));
 		tetha = Math.toDegrees(tetha);
-		if(tetha < 0) {
-			tetha += 360;
-		}
+//		if(tetha < 0) {
+//			tetha += 360;
+//		}
 		
 		//elevation
 		double elev = p2.z() - p1.z();

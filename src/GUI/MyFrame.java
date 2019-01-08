@@ -176,7 +176,7 @@ public class MyFrame extends JFrame implements MouseListener{
 								play.setInitLocation(game.getPlayer().getPoint().x(), game.getPlayer().getPoint().y());
 								play.rotate(dir);
 								try {
-									Thread.sleep(20);
+									Thread.sleep(100);
 								} catch (InterruptedException e) {
 									e.printStackTrace();
 								}
@@ -188,6 +188,7 @@ public class MyFrame extends JFrame implements MouseListener{
 						}
 					});
 					gamePlay.start();
+					readyToStart = 0;
 				}
 				else {
 					String msg = "Please first choose the game file and create Player";
@@ -226,16 +227,16 @@ public class MyFrame extends JFrame implements MouseListener{
 		g.drawImage(background, 8, 50, width, height, this);
 		if(game != null) {
 			if(game.getPacmanList() != null) {
-				//drawPacman(g);
+				drawPacman(g);
 			}
 			if(game.getGhostList() != null) {
-				//drawGhost(g);
+				drawGhost(g);
 			}
 			if(game.getFruitList() != null) {
 				drawFruit(g);
 			}
 			if(game.getBoxList() != null) {
-				//drawBox(g);
+				drawBox(g);
 			}
 			if(game.getPlayer() != null) {
 				drawPlayer(g);
@@ -302,7 +303,7 @@ public class MyFrame extends JFrame implements MouseListener{
 			int imgSize = (int)(35.0 * ((widthPercent + heightPercent) / 2));
 			g.setColor(Color.PINK);
 		//	System.out.println(xP + " " + yP);
-			g.fillOval(xP - dX, yP - dY, imgSize, imgSize);
+			g.fillOval(8  + xP - dX, yP - dY + 50, imgSize, imgSize);
 		}
 	}
 
@@ -332,8 +333,8 @@ public class MyFrame extends JFrame implements MouseListener{
 			y = (int)(arg.getY());//y by click
 			boolean notBox = checkPlace(x, y);
 			if(notBox) {
-				int xP = (int)((double)x * (Math.pow(heightPercent, -1))); //change x to actually size
-				int yP = (int)((double)(y - 50) * (Math.pow(widthPercent, -1))); //change y to actually size
+				int xP = (int)((double)x * (Math.pow(widthPercent, -1))); //change x to actually size
+				int yP = (int)((double)(y - 50) * (Math.pow(heightPercent, -1))); //change y to actually size
 
 				double [] playerCoordinates = fromPixelToLatLon(xP, yP);
 
