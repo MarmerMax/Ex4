@@ -6,8 +6,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="E:/last oop project/Ex4/Ex4_v0.2.jar"/>
-	<classpathentry kind="lib" path="E:/last oop project/Ex4/mysql-connector-java-5.1.47.jar"/>
-	<classpathentry kind="lib" path="E:/last oop project/Ex4/Graph_v0.11.jar"/>
+	<classpathentry kind="lib" path="E:/Exersice/Ex4/mysql-connector-java-5.1.47.jar"/>
+	<classpathentry kind="lib" path="E:/Exersice/Ex4/Graph_v0.11.jar"/>
+	<classpathentry kind="lib" path="E:/Exersice/Ex4/Ex4_v0.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

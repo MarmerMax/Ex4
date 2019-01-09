@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.MenuItem;
@@ -39,6 +40,8 @@ import Robot.Play;
 
 public class MyFrame extends JFrame implements MouseListener{
 
+	private Image dbImage;
+	private Graphics dbg;
 	public BufferedImage background;
 	private int height, width, startHeight, startWidth;
 	private double heightPercent, widthPercent;
@@ -48,182 +51,43 @@ public class MyFrame extends JFrame implements MouseListener{
 
 	private boolean createPacman = false;
 	private int readyToStart = 0; //0 - need to chose file and create player, 1 = need to create player, 2 - ready
-
+	private boolean gameRunning = false;
+	
 	private int x, y;
 	private boolean doRotate = false;
 	private double dir = 0;
+	
+
+	
 
 	public MyFrame() {
-		try {
-			createGUI();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		createGUI();
 		this.addMouseListener(this);
 	}
 
-	public void createGUI() throws IOException{
-		background = ImageIO.read(new File("data\\Ariel1.png"));
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
-		if(screenSize.getWidth() < background.getWidth()) {
-			widthPercent = screenSize.getWidth() /  background.getWidth();
-			startWidth = (int)screenSize.getWidth();
-		}
-		else {
-			widthPercent = 1;
-			startWidth = background.getWidth();
-		}
-
-		if(screenSize.getHeight() < background.getHeight()) {
-			heightPercent = screenSize.getHeight() / background.getHeight();
-			startHeight = (int)screenSize.getHeight() + 50;
-		}
-		else {
-			heightPercent = 1;
-			startHeight = background.getHeight();
-		}
-		
-		height = startHeight;
-		width = startWidth;
-
-		//		System.out.println("screen size: " + screenSize.getHeight() + " x " + screenSize.getWidth());
-		//		System.out.println("background size: " + background.getHeight() + " x " + background.getWidth());
+	public void createGUI(){
+		checkBackground();
 
 		setVisible(true);
 		setSize(startWidth,startHeight + 50);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-		MenuBar menuBar = new MenuBar();
-		//file menu 
-		Menu file = new Menu("File");
-		MenuItem fileItemOpen = new MenuItem("Open");
-		MenuItem fileItemSave = new MenuItem("Save");
-		MenuItem fileItemExit = new MenuItem("Exit");
-		file.add(fileItemOpen);
-		file.add(fileItemSave);
-		file.add(fileItemExit);
-		menuBar.add(file);
-
-		//game menu
-		Menu create = new Menu("Create");
-		MenuItem createItemPlayer = new MenuItem("Player");
-		create.add(createItemPlayer);
-		menuBar.add(create);
-
-		Menu game1 = new Menu("Game");
-		MenuItem game1ItemStart = new MenuItem("Start");
-		game1.add(game1ItemStart);
-		menuBar.add(game1);	
-
-		this.setMenuBar(menuBar);
-
-
-		/////////////////////file menu///////////////////////
-		fileItemOpen.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String fileName = readFileDialog();
-				game = new Game();
-				play = new Play(fileName);
-				play.setIDs(1);
-				game.initialization(play.getBoard());				
-				repaint();
-				readyToStart = 1;
-			}
-		});
-
-		fileItemExit.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				System.exit(0);
-			}
-		});
-
-		/////////////////////create menu/////////////////////
-		createItemPlayer.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if(readyToStart == 1) {
-					createPacman = true;
-					readyToStart = 2;
-				}
-				else if (readyToStart == 0){
-					String msg = "Please first choose the game file";
-					JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.INFORMATION_MESSAGE);
-				}
-			}
-		});
-
-		/////////////////////game menu///////////////////////
-		game1ItemStart.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if(game.getPlayer() != null) {
-					createPacman=false;
-					doRotate = true;
-					play.start();
-					Thread gamePlay = new Thread(new Runnable() {
-						@Override
-						public void run() {
-							play();
-							RepaintThread win = new RepaintThread();
-							Thread my = new Thread(win);
-							my.start();
-						}
-						private void play() {
-							while(play.isRuning()) {
-								game.initialization(play.getBoard());
-								play.setInitLocation(game.getPlayer().getPoint().x(), game.getPlayer().getPoint().y());
-								play.rotate(dir);
-								try {
-									Thread.sleep(100);
-								} catch (InterruptedException e) {
-									e.printStackTrace();
-								}
-								ArrayList<String> board_data = new ArrayList<>();
-								board_data = play.getBoard();
-								//System.out.println(board_data.get(0));
-								repaint();
-							}
-						}
-					});
-					gamePlay.start();
-					readyToStart = 0;
-				}
-				else {
-					String msg = "Please first choose the game file and create Player";
-					JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.INFORMATION_MESSAGE);
-				}
-				//				if(pacmanList != null && fruitList != null && pathList != null && pacmanList.size() > 0 && fruitList.size() > 0) {
-				//					pool = Executors.newFixedThreadPool(pathList.size());
-				//					for(int i = 0; i < pathList.size(); i++) {
-				//						PacmanRunner temp = new PacmanRunner(i);
-				//						pool.execute(temp);
-				//					}
-				//					
-				//					pool.shutdown();
-				//				}
-			}
-		});
-
-		//////////////////////////window frame///////////////////////
-		getContentPane().addComponentListener(new ComponentAdapter() {
-			public void componentResized(ComponentEvent e) {
-				Component c = (Component)e.getComponent();
-				width = c.getWidth();
-				height = c.getHeight();
-				windowResize();
-				repaint();
-			}
-		});	
+		
+		createMenu();
 	}
 
-	public void windowResize() {
+	private void windowResize() {
 		widthPercent = (double)width / startWidth;
 		heightPercent = (double)height / startHeight;
 	}
-
+	
 	public void paint(Graphics g) {
+		dbImage = createImage(getWidth(), getHeight());
+		dbg =dbImage.getGraphics();
+		paintComponent(dbg);
+		g.drawImage(dbImage, 0, 0, this);
+	}
+
+	private void paintComponent(Graphics g) {
 		g.drawImage(background, 8, 50, width, height, this);
 		if(game != null) {
 			if(game.getPacmanList() != null) {
@@ -242,9 +106,10 @@ public class MyFrame extends JFrame implements MouseListener{
 				drawPlayer(g);
 			}
 		}
+		repaint();
 	}
 
-	public void drawPacman(Graphics g) {
+	private void drawPacman(Graphics g) {
 		int index = 0;
 		while(index < game.getPacmanList().size()) {
 			Pacman temp = game.getPacmanList().get(index);
@@ -260,7 +125,7 @@ public class MyFrame extends JFrame implements MouseListener{
 		}
 	}
 
-	public void drawGhost(Graphics g) {
+	private void drawGhost(Graphics g) {
 		int index = 0;
 		while(index < game.getGhostList().size()) {
 			Ghost temp = game.getGhostList().get(index);
@@ -276,7 +141,7 @@ public class MyFrame extends JFrame implements MouseListener{
 		}
 	}
 
-	public void drawFruit(Graphics g) {
+	private void drawFruit(Graphics g) {
 		int index = 0;
 		while(index < game.getFruitList().size()) {
 			Fruit temp = game.getFruitList().get(index);
@@ -292,7 +157,7 @@ public class MyFrame extends JFrame implements MouseListener{
 		}
 	}
 
-	public void drawPlayer(Graphics g) {
+	private void drawPlayer(Graphics g) {
 		if(game.getPlayer() != null) {
 			Player temp = game.getPlayer();
 			int [] coor = fromLatLonToPixel(temp.getPoint().x(), temp.getPoint().y());
@@ -307,7 +172,7 @@ public class MyFrame extends JFrame implements MouseListener{
 		}
 	}
 
-	public void drawBox(Graphics g) {
+	private void drawBox(Graphics g) {
 		int index = 0;
 		while(index < game.getBoxList().size()) {
 			Box temp = game.getBoxList().get(index);
@@ -357,10 +222,11 @@ public class MyFrame extends JFrame implements MouseListener{
 			int xP = (int)((double)x * (Math.pow(heightPercent, -1))); //change x to actually size
 			int yP = (int)((double)(y - 50) * (Math.pow(widthPercent, -1))); //change y to actually size
 
-			double [] playerCoordinates = fromPixelToLatLon(xP, yP);
-			Point3D temp = new Point3D(playerCoordinates[0], playerCoordinates[1], 0);
+			double [] toGoCoordinates = fromPixelToLatLon(xP, yP);
+			Point3D temp = new Point3D(toGoCoordinates[0], toGoCoordinates[1], 0);
 			MyCoords azimuth = new MyCoords();
 			double [] AED = azimuth.azimuth_elevation_dist(game.getPlayer().getPoint(), temp);
+			System.out.println(AED[0]);
 			dir = AED[0];
 			play.rotate(dir); 
 		}
@@ -389,7 +255,7 @@ public class MyFrame extends JFrame implements MouseListener{
 	@Override
 	public void mouseExited(MouseEvent e) {}
 
-	public String readFileDialog() {
+	private String readFileDialog() {
 		//try read from the file
 		FileDialog fd = new FileDialog(this, "Open text file", FileDialog.LOAD);
 		fd.setFile("*.csv");
@@ -436,17 +302,210 @@ public class MyFrame extends JFrame implements MouseListener{
 		return cc;
 	}
 	
-	class RepaintThread implements Runnable{
-		@Override
-		public void run() {
-			while(play.isRuning()) {
-				try {
-					repaint();
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+//	class RepaintThread implements Runnable{
+//		@Override
+//		public void run() {
+//			while(gameRunning) {
+//				try {
+//					repaint();
+//					Thread.sleep(10);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}	
+//	}
+	
+	private void checkBackground() {
+		try {
+			background = ImageIO.read(new File("data\\Ariel1.png"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		if(screenSize.getWidth() < background.getWidth()) {
+			widthPercent = screenSize.getWidth() /  background.getWidth();
+			startWidth = (int)screenSize.getWidth();
+		}
+		else {
+			widthPercent = 1;
+			startWidth = background.getWidth();
+		}
+		if(screenSize.getHeight() < background.getHeight()) {
+			heightPercent = screenSize.getHeight() / background.getHeight();
+			startHeight = (int)screenSize.getHeight() + 50;
+		}
+		else {
+			heightPercent = 1;
+			startHeight = background.getHeight();
+		}
+		
+		height = startHeight;
+		width = startWidth;
+	}
+	
+	private void createMenu() {
+		MenuBar menuBar = new MenuBar();
+		//file menu 
+		Menu file = new Menu("File");
+		MenuItem fileItemOpen = new MenuItem("Open");
+		MenuItem fileItemSave = new MenuItem("Save");
+		MenuItem fileItemExit = new MenuItem("Exit");
+		file.add(fileItemOpen);
+		file.add(fileItemSave);
+		file.add(fileItemExit);
+		menuBar.add(file);
+
+		//game menu
+		Menu create = new Menu("Create");
+		MenuItem createItemPlayer = new MenuItem("Player");
+		create.add(createItemPlayer);
+		menuBar.add(create);
+
+		Menu game1 = new Menu("Game");
+		MenuItem game1ItemStart = new MenuItem("Start");
+		MenuItem game1ItemStartAuto = new MenuItem("Auto Start");
+		game1.add(game1ItemStart);
+		game1.add(game1ItemStartAuto);
+		menuBar.add(game1);	
+
+		this.setMenuBar(menuBar);
+
+
+		/////////////////////file menu///////////////////////
+		fileItemOpen.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String fileName = readFileDialog();
+				game = new Game();
+				play = new Play(fileName);
+				play.setIDs(1);
+				game.initialization(play.getBoard());				
+				repaint();
+				readyToStart = 1;
+			}
+		});
+
+		fileItemExit.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				System.exit(0);
+			}
+		});
+
+		/////////////////////create menu/////////////////////
+		createItemPlayer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(readyToStart == 1) {
+					createPacman = true;
+					readyToStart = 2;
+				}
+				else if (readyToStart == 0){
+					String msg = "Please first choose the game file";
+					JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.INFORMATION_MESSAGE);
 				}
 			}
-		}	
+		});
+
+//		/////////////////////game menu///////////////////////
+//		game1ItemStart.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				if(game.getPlayer() != null) {
+//					createPacman=false;
+//					doRotate = true;
+//					play.start();
+//					Thread gamePlay = new Thread(new Runnable() {
+//						@Override
+//						public void run() {
+////							gameRunning = true;
+////							RepaintThread win = new RepaintThread();
+////							Thread my = new Thread(win);
+////							my.start();
+//							play();
+//						}
+//						private void play() {
+//							while(play.isRuning()) {
+//								game.initialization(play.getBoard());
+//								play.setInitLocation(game.getPlayer().getPoint().x(), game.getPlayer().getPoint().y());
+//								play.rotate(dir);
+//								try {
+//									Thread.sleep(100);
+//								} catch (InterruptedException e) {
+//									e.printStackTrace();
+//								}
+////								ArrayList<String> board_data = new ArrayList<>();
+////								board_data = play.getBoard();
+//								//System.out.println(board_data.get(0));
+//								repaint();
+//							}
+//							gameRunning = false;
+//							String info = play.getStatistics();
+//							System.out.println(info);
+//						}
+//					});
+//					gamePlay.start();
+//					readyToStart = 0;
+//				}
+//				else {
+//					String msg = "Please first choose the game file and create Player";
+//					JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.INFORMATION_MESSAGE);
+//				}
+//			}
+//		});
+		
+		game1ItemStart.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(game.getPlayer() != null) {
+					createPacman=false;
+					doRotate = true;
+					play.start();
+					Thread gamePlay = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							play();
+						}
+						private void play() {
+							while(play.isRuning()) {
+								game.initialization(play.getBoard());
+								play.setInitLocation(game.getPlayer().getPoint().x(), game.getPlayer().getPoint().y());
+								play.rotate(dir);
+								try {
+									Thread.sleep(100);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+//								ArrayList<String> board_data = new ArrayList<>();
+//								board_data = play.getBoard();
+								//System.out.println(board_data.get(0));
+								repaint();
+							}
+							gameRunning = false;
+							String info = play.getStatistics();
+							System.out.println(info);
+						}
+					});
+					gamePlay.start();
+					readyToStart = 0;
+				}
+				else {
+					String msg = "Please first choose the game file and create Player";
+					JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.INFORMATION_MESSAGE);
+				}
+			}
+		});
+
+		//////////////////////////window frame///////////////////////
+		getContentPane().addComponentListener(new ComponentAdapter() {
+			public void componentResized(ComponentEvent e) {
+				Component c = (Component)e.getComponent();
+				width = c.getWidth();
+				height = c.getHeight();
+				windowResize();
+				repaint();
+			}
+		});	
 	}
 }
