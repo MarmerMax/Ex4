@@ -3,6 +3,7 @@ package Game;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import GUI.Map;
 import Objects.Box;
 import Objects.Fruit;
 import Objects.Ghost;
@@ -11,6 +12,7 @@ import Objects.Player;
 
 public class Game {
 
+	private Map map;
 	private LinkedList<Pacman> pacmanList;
 	private LinkedList<Fruit> fruitList;
 	private LinkedList<Ghost> ghostList;
@@ -77,6 +79,14 @@ public class Game {
 
 	public LinkedList<Box> getBoxList(){
 		return boxList;
+	}
+	
+	public void setMap(Map map) {
+		this.map = map;
+	}
+	
+	public Map getMap() {
+		return map;
 	}
 
 }
