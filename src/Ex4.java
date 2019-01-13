@@ -7,5 +7,4 @@ public class Ex4 {
 		new MyFrame();
 
 	}
-
 }

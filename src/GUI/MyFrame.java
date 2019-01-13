@@ -37,15 +37,19 @@ import Objects.Player;
 import Robot.Play;
 
 
-
+/**
+ * This class need for show all game data on screen.
+ * @author Max Marmer
+ *
+ */
 public class MyFrame extends JFrame implements MouseListener{
 
 	private Image dbImage;
 	private Graphics dbg;
 	public BufferedImage background;
 	private int height, width;
-//	private int height, width, startHeight, startWidth;
-//	private double heightPercent, widthPercent;
+	//	private int height, width, startHeight, startWidth;
+	//	private double heightPercent, widthPercent;
 
 	private Game game;
 	private Play play;
@@ -54,34 +58,37 @@ public class MyFrame extends JFrame implements MouseListener{
 	private boolean createPacman = false;
 	private int readyToStart = 0; //0 - need to chose file and create player, 1 = need to create player, 2 - ready
 	private boolean gameRunning = false;
-	
+
 	private int x, y;
 	private boolean doRotate = false;
 	private double dir = 0;
-	
 
-	
 
+
+	/**
+	 * Constructor
+	 */
 	public MyFrame() {
 		createGUI();
 		this.addMouseListener(this);
 	}
 
+	/**
+	 * Create GUI.
+	 */
 	public void createGUI(){
 		checkBackground();
 
 		setVisible(true);
 		setSize(map.getStartWidth(), map.getStartHeight() + 50);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
+
 		createMenu();
 	}
 
-//	private void windowResize() {
-//		widthPercent = (double)width / startWidth;
-//		heightPercent = (double)height / startHeight;
-//	}
-	
+	/**
+	 * Draw all data on screen.
+	 */
 	public void paint(Graphics g) {
 		dbImage = createImage(getWidth(), getHeight());
 		dbg =dbImage.getGraphics();
@@ -89,6 +96,10 @@ public class MyFrame extends JFrame implements MouseListener{
 		g.drawImage(dbImage, 0, 0, this);
 	}
 
+	/**
+	 * This method add data to image and after this call to paint function.
+	 * @param g
+	 */
 	private void paintComponent(Graphics g) {
 		g.drawImage(background, 8, 50, width, height, this);
 		if(game != null) {
@@ -111,6 +122,10 @@ public class MyFrame extends JFrame implements MouseListener{
 		repaint();
 	}
 
+	/**
+	 * Add all pacman to image.
+	 * @param g
+	 */
 	private void drawPacman(Graphics g) {
 		int index = 0;
 		while(index < game.getPacmanList().size()) {
@@ -127,6 +142,10 @@ public class MyFrame extends JFrame implements MouseListener{
 		}
 	}
 
+	/**
+	 * Add all ghost to image.
+	 * @param g
+	 */
 	private void drawGhost(Graphics g) {
 		int index = 0;
 		while(index < game.getGhostList().size()) {
@@ -137,17 +156,16 @@ public class MyFrame extends JFrame implements MouseListener{
 			int dX = (int)(15.0 * map.getWidthPercent());
 			int dY = (int)(15.0 * map.getHeightPercent());
 			int imgSize = (int)(30.0 * ((map.getWidthPercent() + map.getHeightPercent()) / 2));
-//			int xP = (int)((double)coor[0] * widthPercent);
-//			int yP = (int)((double)coor[1] * heightPercent);
-//			int dX = (int)(15.0 * widthPercent);
-//			int dY = (int)(15.0 * heightPercent);
-//			int imgSize = (int)(30.0 * ((widthPercent + heightPercent) / 2));
 			g.setColor(Color.RED);
 			g.fillOval(8 + xP - dX, 50 + yP - dY, imgSize, imgSize);
 			index++;
 		}
 	}
 
+	/**
+	 * Add all fruits to image.
+	 * @param g
+	 */
 	private void drawFruit(Graphics g) {
 		int index = 0;
 		while(index < game.getFruitList().size()) {
@@ -158,17 +176,17 @@ public class MyFrame extends JFrame implements MouseListener{
 			int dX = (int)(5.0 * map.getWidthPercent());
 			int dY = (int)(5.0 * map.getHeightPercent());
 			int imgSize = (int)(10.0 * ((map.getWidthPercent() + map.getHeightPercent()) / 2));
-//			int xP = (int)((double)coor[0] * widthPercent);
-//			int yP = (int)((double)coor[1] * heightPercent);
-//			int dX = (int)(5.0 * widthPercent);
-//			int dY = (int)(5.0 * heightPercent);
-//			int imgSize = (int)(10.0 * ((widthPercent + heightPercent) / 2));
 			g.setColor(Color.GREEN);
 			g.fillOval(8 + xP - dX, 50 + yP - dY, imgSize, imgSize);
+
 			index++;
 		}
 	}
 
+	/**
+	 * Add player to image.
+	 * @param g
+	 */
 	private void drawPlayer(Graphics g) {
 		if(game.getPlayer() != null) {
 			Player temp = game.getPlayer();
@@ -178,16 +196,15 @@ public class MyFrame extends JFrame implements MouseListener{
 			int dX = (int)(17.5 * map.getWidthPercent());
 			int dY = (int)(17.5 * map.getHeightPercent());
 			int imgSize = (int)(35.0 * ((map.getWidthPercent() + map.getHeightPercent()) / 2));
-//			int xP = (int)((double)coor[0] * widthPercent);
-//			int yP = (int)((double)coor[1] * heightPercent);
-//			int dX = (int)(17.5 * widthPercent);
-//			int dY = (int)(17.5 * heightPercent);
-//			int imgSize = (int)(35.0 * ((widthPercent + heightPercent) / 2));
 			g.setColor(Color.PINK);
 			g.fillOval(8  + xP - dX, yP - dY + 50, imgSize, imgSize);
 		}
 	}
 
+	/**
+	 * Add box to image.
+	 * @param g
+	 */
 	private void drawBox(Graphics g) {
 		int index = 0;
 		while(index < game.getBoxList().size()) {
@@ -242,7 +259,6 @@ public class MyFrame extends JFrame implements MouseListener{
 			Point3D temp = new Point3D(toGoCoordinates[0], toGoCoordinates[1], 0);
 			MyCoords azimuth = new MyCoords();
 			double [] AED = azimuth.azimuth_elevation_dist(game.getPlayer().getPoint(), temp);
-			System.out.println(AED[0]);
 			dir = AED[0];
 			play.rotate(dir); 
 		}
@@ -271,6 +287,10 @@ public class MyFrame extends JFrame implements MouseListener{
 	@Override
 	public void mouseExited(MouseEvent e) {}
 
+	/**
+	 * This function open file that user choose in window.
+	 * @return
+	 */
 	private String readFileDialog() {
 		//try read from the file
 		FileDialog fd = new FileDialog(this, "Open text file", FileDialog.LOAD);
@@ -288,78 +308,17 @@ public class MyFrame extends JFrame implements MouseListener{
 		return folder + fileName;
 	}
 
-//	private double[] fromPixelToLatLon(int x, int y) {
-//		double [] xy = new double[2];
-//		double xStep = (35.212416 - 35.202369) / startWidth; 
-//		double yStep = (32.105728 - 32.101898) / startHeight;
-//		xy[0] = 32.105728 - (yStep * y);
-//		xy[1] = 35.202369 + (xStep * x);
-//		return xy;
-//	}
-//
-//	private int[] fromLatLonToPixel(double latitude, double longitude) {
-//		double mapHeight = startHeight;
-//		double mapWidth = startWidth;
-//		double mapLatBottom = 32.101898;
-//		double mapLngLeft = 35.202369;
-//		double mapLngRight = 35.212416;
-//		double mapLatBottomRad = mapLatBottom * Math.PI / 180;
-//		double latitudeRad = latitude * Math.PI / 180;
-//		double mapLngDelta = (mapLngRight - mapLngLeft);
-//		double worldMapWidth = ((mapWidth / mapLngDelta) * 360) / (2 * Math.PI);
-//		double mapOffsetY = (worldMapWidth / 2 * Math.log((1 + Math.sin(mapLatBottomRad))
-//				/ (1 - Math.sin(mapLatBottomRad))));
-//		double x = (longitude - mapLngLeft) * (mapWidth / mapLngDelta);
-//		double y = mapHeight - ((worldMapWidth / 2 * Math.log((1 + Math.sin(latitudeRad)) 
-//				/ (1 - Math.sin(latitudeRad)))) - mapOffsetY);
-//		int [] cc = new int[2];
-//		cc[0] = (int)x;
-//		cc[1] = (int)y;
-//		return cc;
-//	}
-	
-//	class RepaintThread implements Runnable{
-//		@Override
-//		public void run() {
-//			while(gameRunning) {
-//				try {
-//					repaint();
-//					Thread.sleep(10);
-//				} catch (InterruptedException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}	
-//	}
-	
+	/**
+	 * This function create map for gui.
+	 */
 	private void checkBackground() {
 		map = new Map();
 		background = map.getImage();
-//		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-//		if(screenSize.getWidth() < background.getWidth()) {
-//			widthPercent = screenSize.getWidth() /  background.getWidth();
-//			startWidth = (int)screenSize.getWidth();
-//		}
-//		else {
-//			widthPercent = 1;
-//			startWidth = background.getWidth();
-//		}
-//		if(screenSize.getHeight() < background.getHeight()) {
-//			heightPercent = screenSize.getHeight() / background.getHeight();
-//			startHeight = (int)screenSize.getHeight() + 50;
-//		}
-//		else {
-//			heightPercent = 1;
-//			startHeight = background.getHeight();
-//		}
-		
-//		map.setStartSize(startHeight, startWidth);
-		
-		
-//		height = startHeight;
-//		width = startWidth;
 	}
-	
+
+	/**
+	 * This function create bar menu for frame window.
+	 */
 	private void createMenu() {
 		MenuBar menuBar = new MenuBar();
 		//file menu 
@@ -430,7 +389,7 @@ public class MyFrame extends JFrame implements MouseListener{
 			public void actionPerformed(ActionEvent e) {
 				if(readyToStart == 1) {
 					createPacman=false;
-					
+
 					int xP = (int)((double)1 * (Math.pow(map.getWidthPercent(), -1))); //change x to actually size
 					int yP = (int)((double)1 * (Math.pow(map.getHeightPercent(), -1))); //change y to actually size
 
@@ -441,7 +400,7 @@ public class MyFrame extends JFrame implements MouseListener{
 
 					//add player to game
 					play.setInitLocation(game.getPlayer().getPoint().x(), game.getPlayer().getPoint().y());
-					
+
 					play.start();
 					Thread gamePlay = new Thread(new Runnable() {
 						@Override
@@ -452,11 +411,11 @@ public class MyFrame extends JFrame implements MouseListener{
 							GameAlgo algo = new GameAlgo(game);
 							while(play.isRuning()) {
 								play.setInitLocation(game.getPlayer().getPoint().x(), game.getPlayer().getPoint().y());
-								
+
 								game.initialization(play.getBoard());
-								
+
 								algo.initialization();
-								
+
 								play.rotate(algo.getDir());
 								try {
 									Thread.sleep(30);
@@ -479,7 +438,7 @@ public class MyFrame extends JFrame implements MouseListener{
 				}
 			}
 		});
-		
+
 		game1ItemStart.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -502,8 +461,8 @@ public class MyFrame extends JFrame implements MouseListener{
 								} catch (InterruptedException e) {
 									e.printStackTrace();
 								}
-//								ArrayList<String> board_data = new ArrayList<>();
-//								board_data = play.getBoard();
+								//								ArrayList<String> board_data = new ArrayList<>();
+								//								board_data = play.getBoard();
 								//System.out.println(board_data.get(0));
 								repaint();
 							}
@@ -528,7 +487,7 @@ public class MyFrame extends JFrame implements MouseListener{
 				Component c = (Component)e.getComponent();
 				width = c.getWidth();
 				height = c.getHeight();
-	//			windowResize();
+				//			windowResize();
 				map.windowResize(width, height);
 				repaint();
 			}

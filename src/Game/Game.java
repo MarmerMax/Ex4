@@ -10,6 +10,11 @@ import Objects.Ghost;
 import Objects.Pacman;
 import Objects.Player;
 
+/**
+ * This class need for initialization game's properties.
+ * @author Max Marmer
+ *
+ */
 public class Game {
 
 	private Map map;
@@ -21,6 +26,10 @@ public class Game {
 
 	public Game() {}
 
+	/**
+	 * This method need for keep all data in right classes. 
+	 * @param objectsData
+	 */
 	public void initialization(ArrayList<String> objectsData) {
 		pacmanList = new LinkedList<>();
 		fruitList = new LinkedList<>();
@@ -57,6 +66,10 @@ public class Game {
 		}
 	}
 	
+	/**
+	 * This method create player for our game.
+	 * @param coor coordinates of player
+	 */
 	public void createPlayer(double [] coor) {
 		player = new Player(coor[0] + "", coor[1] + "", 0 + "");
 	}
@@ -88,5 +101,4 @@ public class Game {
 	public Map getMap() {
 		return map;
 	}
-
 }

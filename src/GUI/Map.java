@@ -32,6 +32,9 @@ public class Map {
 		}
 	}
 	
+	/**
+	 * This function create map and check right size of window.
+	 */
 	private void initialization() {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		if(screenSize.getWidth() < image.getWidth()) {
@@ -61,7 +64,11 @@ public class Map {
 //			startWidth = width;
 //		}
 //	}
-	
+	/**
+	 * This function check percent of after change frame window size.
+	 * @param width
+	 * @param height
+	 */
 	public void windowResize(int width, int height) {
 		widthPercent = (double)width / startWidth;
 		heightPercent = (double)height / startHeight;
@@ -157,8 +164,8 @@ public class Map {
 
 	/**
 	 * This method convert from x,y in pixel to lat, lon in degrees for this map.
-	 * @param x
-	 * @param y
+	 * @param x x in pixel
+	 * @param y y in pixel
 	 * @return
 	 */
 	public double[] fromPixelToLatLon(int x, int y) {

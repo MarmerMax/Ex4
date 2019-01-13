@@ -39,7 +39,7 @@ public class Graph_Example {
 		}
 		G.add(new Node(target)); // Node "b" (15)
 		
-		System.out.println(pp[0].distance(pp[6]));
+		//System.out.println(pp[0].distance(pp[6]));
 		G.addEdge("a","1",pp[0].distance2D(pp[1]));
 		G.addEdge("a","2",pp[0].distance2D(pp[2]));
 		G.addEdge("a","5",pp[0].distance2D(pp[5]));
@@ -76,6 +76,7 @@ public class Graph_Example {
 		Graph_Algo.dijkstra(G, source);
 		
 		Node b = G.getNodeByName(target);
+		
 		System.out.println("***** Graph Demo for OOP_Ex4 *****");
 		System.out.println(b);
 		System.out.println("Dist: "+b.getDist());
