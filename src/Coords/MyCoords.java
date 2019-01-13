@@ -58,10 +58,7 @@ public class MyCoords implements coords_converter{
 		double tetha = Math.atan2(Math.sin(dLon) * Math.cos(p2.x()),
 				Math.cos(p1.x()) * Math.sin(p2.x()) - Math.sin(p1.x()) * Math.cos(p2.x()) * Math.cos(dLon));
 		tetha = Math.toDegrees(tetha);
-//		if(tetha < 0) {
-//			tetha += 360;
-//		}
-		
+
 		//elevation
 		double elev = p2.z() - p1.z();
 		
@@ -82,5 +79,19 @@ public class MyCoords implements coords_converter{
 		}
 		return true;
 	}
+	
+	public boolean thisPointInRectangle(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int x, int y) { 
+		float A = area(x1, y1, x2, y2, x3, y3) + area(x1, y1, x4, y4, x3, y3); 
+		float A1 = area(x, y, x1, y1, x2, y2);
+		float A2 = area(x, y, x2, y2, x3, y3);
+		float A3 = area(x, y, x3, y3, x4, y4); 
+		float A4 = area(x, y, x1, y1, x4, y4); 
+
+		return (A == A1 + A2 + A3 + A4); 
+	}
+	
+	private float area(int x1, int y1, int x2, int y2, int x3, int y3) { 
+		return (float)Math.abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2.0); 
+	} 
 
 }

@@ -6,9 +6,7 @@ package Objects;
  *
  */
 public class Player extends GameObject{
-	
-	private double score;
-	
+
 	/**
 	 * Constructor.
 	 * @param lat latitude
@@ -17,16 +15,5 @@ public class Player extends GameObject{
 	 */
 	public Player(String lat, String lon, String id) {
 		super(lat,lon, id);
-	}
-	
-	public double getScore() {
-		return score;
-	}
-	
-	public void setScore(double score) {
-		this.score = score;
-	}
-	public void addScore() {
-		score++;
 	}
 }

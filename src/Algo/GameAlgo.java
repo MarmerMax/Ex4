@@ -1,23 +1,23 @@
 package Algo;
+
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedList;
-
-import com.mysql.fabric.xmlrpc.base.Array;
-
 import Coords.MyCoords;
-import GUI.Map;
 import Game.Game;
 import Geom.Point3D;
 import Objects.Box;
-import Objects.Fruit;
-import Objects.Pacman;
-import Objects.Player;
 import graph.Graph;
 import graph.Graph_Algo;
 import graph.Node;
+
+
+/**
+ * This class check best route to player for eat all fruits and pacmans.
+ * @author Max Marmer
+ *
+ */
 public class GameAlgo {
 
 	private Game game;
@@ -25,14 +25,24 @@ public class GameAlgo {
 	private ArrayList<Point3D> targetList;
 	private ArrayList<LinkedList<Point3D>> anglesList;
 
+	/**
+	 * Algorithm constructor.
+	 * @param game
+	 */
 	public GameAlgo(Game game) {
 		this.game = game;
 	}
 
+	/**
+	 * This function initialize actually situation in game and check when player need to run.  
+	 */
 	public void initialization() {
 		checkRotate();
 	}
 
+	/**
+	 * This function check rotate of player.
+	 */
 	private void checkRotate(){
 		getAnglesOfBoxes();
 		addTargetToList();
@@ -40,39 +50,68 @@ public class GameAlgo {
 		dir = findDir(next);
 	}
 
+	/**
+	 * This function create target list and add all targets.
+	 */
 	private void addTargetToList() {
 		targetList = new ArrayList<>();
 		addFruitToList();
 		addPacmansToList();
 	}
 
+	/**
+	 * This method check azimuth to target.
+	 * @param next index of next target
+	 * @return azimuth
+	 */
 	private double findDir(int [] next) {
 		double temp;
 		if(next[0] == 0) {
-			temp = new MyCoords().azimuth_elevation_dist(game.getPlayer().getPoint(), targetList.get(next[1]))[0];
+			try {
+				temp = new MyCoords().azimuth_elevation_dist(game.getPlayer().getPoint(), targetList.get(next[1]))[0];
+			}catch(IndexOutOfBoundsException e){
+				int x = game.getMap().getWidth() / 2;
+				int y = game.getMap().getHeight() / 2;
+				Point3D point = new Point3D(x , y);
+				temp = new MyCoords().azimuth_elevation_dist(game.getPlayer().getPoint(), point)[0];
+			}
 		}
 		else {
-			int [] angleId = nextAngle(next[1]);
-			temp = new MyCoords().azimuth_elevation_dist(game.getPlayer().getPoint(), anglesList.get(angleId[0]).get(angleId[1]))[0];
+			try {
+				int [] angleId = nextAngle(next[1]);
+				temp = new MyCoords().azimuth_elevation_dist(game.getPlayer().getPoint(), anglesList.get(angleId[0]).get(angleId[1]))[0];
+			}catch(IndexOutOfBoundsException e){
+				int x = game.getMap().getWidth() / 2;
+				int y = game.getMap().getHeight() / 2;
+				Point3D point = new Point3D(x , y);
+				temp = new MyCoords().azimuth_elevation_dist(game.getPlayer().getPoint(), point)[0];
+			}
+
 		}
 		return temp;
 	}
 
+	/**
+	 * This function check distance to target with boxes on route.
+	 * @param targetIndex
+	 * @return array with next angle/target and distance to target
+	 */
 	private double[] findRoute(int targetIndex) {
 		LinkedList<Point3D> pp = new LinkedList<>();//points3d of source and all angles in route and target
 
 		Graph graph = new Graph(); 
 		String source = "Source";
 		String target = "Target";
-		
+		//System.out.println(targetList.size());
 		LinkedList<String> nodes = new LinkedList<>();//names of points in route
-		
+		LinkedList<Point3D> firstCoor = new LinkedList<>();
 		//add source
 		Point3D player = new Point3D(game.getPlayer().getPoint().x(), game.getPlayer().getPoint().y(),0);
 		int [] playerXY = game.getMap().fromLatLonToPixel(player.x(), player.y());
 		pp.add(new Point3D(playerXY[0], playerXY[1]));//add point to list
 		graph.add(new Node(source));//add name to graph
 		nodes.add(source);//add name to nodes
+		firstCoor.add(player);
 
 		int index = 1;//name in nodes list
 		for(int i = 0; i < anglesList.size(); i++) {
@@ -83,6 +122,7 @@ public class GameAlgo {
 				int [] angleXY = game.getMap().fromLatLonToPixel(anglesList.get(i).get(j).x(), anglesList.get(i).get(j).y());
 				pp.add(new Point3D(angleXY[0], angleXY[1]));
 				nodes.add("" + index);//add to nodes list (list of names of nodes)
+				firstCoor.add(anglesList.get(i).get(j));
 				index++;
 			}
 		}
@@ -92,86 +132,40 @@ public class GameAlgo {
 		pp.add(new Point3D(targetXY[0], targetXY[1]));
 		graph.add(new Node(target));
 		nodes.add(target);
+		firstCoor.add(targetList.get(targetIndex));
 
 		for(int i = 0; i < pp.size() - 1; i++) {
-			System.out.print(nodes.get(i) + "");
-			for(int j = 0; j < pp.size(); j++) { 
-				if(i != j) {
-					double [] sourceTemp = game.getMap().fromPixelToLatLon((int)pp.get(i).x(), (int)pp.get(i).y());
-					double [] targetTemp = game.getMap().fromPixelToLatLon((int)pp.get(j).x(), (int)pp.get(j).y());
 
-					Point3D sourcePoint = new Point3D(sourceTemp[0], sourceTemp[1]);
-					Point3D targetPoint = new Point3D(targetTemp[0], targetTemp[1]);
-					
-					if(isGoodWay(sourcePoint, targetPoint) == -1) {
-						System.out.print("-> " + nodes.get(j));
+			for(int j = 0; j < pp.size(); j++) { 
+				if(i != j) {	
+					Point3D sourcePoint = firstCoor.get(i);
+					Point3D targetPoint = firstCoor.get(j);
+
+					if(isGoodWay(sourcePoint, targetPoint)) {
 						graph.addEdge(nodes.get(i), nodes.get(j), pp.get(i).distance2D(pp.get(j)));
 					}
 				}
 			}
-			System.out.println();
 		}
-		print();
 		
 		Graph_Algo.dijkstra(graph, source);
+		
 		Node b = graph.getNodeByName(target);
-		System.out.println("***** Graph Demo for OOP_Ex4 *****");
-		System.out.println(b);
-		System.out.println("Dist: "+b.getDist());
-		//System.exit(1);
-		
 		ArrayList<String> shortestPath = b.getPath();
-		
-		for(int i=0;i<shortestPath.size();i++) {
-			if(i == 0) {
-				System.out.print(shortestPath.get(i));
-			}
-			else {
-				System.out.print(", "+shortestPath.get(i));
-			}
-		}
-		System.exit(1);
 		String nextAngle = shortestPath.get(1);
 		double temp [] = {b.getDist(), Double.parseDouble(nextAngle)};
+		
 		return temp;
 	}
 	
-	public void print() {
-		for(int i = 0 ; i< anglesList.size();i++) {
-			System.out.println();
-			for(int j = 0; j < anglesList.get(i).size(); j++) {
-				int coor[] = game.getMap().fromLatLonToPixel(anglesList.get(i).get(j).x(), anglesList.get(i).get(j).y());
-				System.out.print(" -> " + (j+1)+ "" + Arrays.toString(coor));
-			}
-			System.out.println();
-		}
-		
-		for(int i = 0; i < game.getBoxList().size(); i++) {
-			Point3D temp1 = game.getBoxList().get(i).getP1();
-			Point3D temp2 = game.getBoxList().get(i).getP2();
-			
-			int coor1[] = game.getMap().fromLatLonToPixel(temp1.x(), temp1.y());
-			int coor2[] = game.getMap().fromLatLonToPixel(temp1.x(), temp2.y());
-			int coor3[] = game.getMap().fromLatLonToPixel(temp2.x(), temp2.y());
-			int coor4[] = game.getMap().fromLatLonToPixel(temp2.x(), temp1.y());
-			System.out.println();
-			System.out.println(" -> " + Arrays.toString(coor1) + " -> " + Arrays.toString(coor2)
-							+ " -> " + Arrays.toString(coor3) + " -> " + Arrays.toString(coor4));
-		}
-	}
-	
-	private void printSourceToTarget(double[]temp1, double[]temp2, int i, int j) {
-		int [] arr1 = game.getMap().fromLatLonToPixel(temp1[0], temp1[1]);
-		int [] arr2 = game.getMap().fromLatLonToPixel(temp2[0], temp2[1]);
-		System.out.println(i + " (" + arr1[0] +", "+arr1[1]+") -> " + j +" ("+arr2[0]+", "+arr2[1]+")");
-	}
 
-	private LinkedList<Line2D> createLinesOfBox(int boxIndex){//all line codcods in pixel
+	/**
+	 * This method create lines of box.
+	 * @param boxIndex index of box
+	 * @return list of lines
+	 */
+	private LinkedList<Line2D> createLinesOfBox(int boxIndex){
 		LinkedList<Line2D> lineList = new LinkedList<>();
-//		Line2D line1 = createLine(anglesList.get(boxIndex).get(0), anglesList.get(boxIndex).get(1));
-//		Line2D line2 = createLine(anglesList.get(boxIndex).get(1), anglesList.get(boxIndex).get(2));
-//		Line2D line3 = createLine(anglesList.get(boxIndex).get(2), anglesList.get(boxIndex).get(3));
-//		Line2D line4 = createLine(anglesList.get(boxIndex).get(3), anglesList.get(boxIndex).get(0));
 
 		Point3D temp1 = new Point3D(game.getBoxList().get(boxIndex).getP1().x(), game.getBoxList().get(boxIndex).getP1().y());
 		Point3D temp2 = new Point3D(game.getBoxList().get(boxIndex).getP1().x(), game.getBoxList().get(boxIndex).getP2().y());
@@ -183,11 +177,6 @@ public class GameAlgo {
 		Line2D line3 = createLine(temp3, temp4);
 		Line2D line4 = createLine(temp4, temp1);
 		
-//		System.out.println("1: (" + line1.getX1()+", "+line1.getY1()+")  ->  ("+line1.getX2()+", " + line1.getY2() + ")");
-//		System.out.println("2: (" + line2.getX1()+", "+line2.getY1()+")  ->  ("+line2.getX2()+", " + line2.getY2() + ")");
-//		System.out.println("3: (" + line3.getX1()+", "+line3.getY1()+")  ->  ("+line3.getX2()+", " + line3.getY2() + ")");
-//		System.out.println("4: (" + line4.getX1()+", "+line4.getY1()+")  ->  ("+line4.getX2()+", " + line4.getY2() + ")");
-
 		lineList.add(line1);
 		lineList.add(line2);
 		lineList.add(line3);
@@ -195,81 +184,64 @@ public class GameAlgo {
 
 		return lineList;
 	}
-
-	private int isGoodWay(Point3D source, Point3D target) {
-
-		double actualWidth = game.getMap().getWidthPercent();
-		double actualHeight = game.getMap().getHeightPercent();
-		
-		int coorSource [] = game.getMap().fromLatLonToPixel(source.x(), source.y());
-		int coorTarget [] = game.getMap().fromLatLonToPixel(target.x(), target.y());
-		
-//		Line2D playerToTarget = new Line2D.Float((int)(coorSource[0] * actualWidth),
-//												 (int)(coorSource[1] * actualHeight),
-//												 (int)(coorTarget[0] * actualWidth),
-//												 (int)(coorTarget[1] * actualHeight));
-		
-		Line2D playerToTarget = new Line2D.Float(coorSource[0],coorSource[1], coorTarget[0],coorTarget[1]);
-
-		int indexOfNearestBoxInRoute = -1;
-		double minDistToBox = Double.MAX_VALUE;
-
-		for(int i = 0; i < game.getBoxList().size(); i++) {
-
-			//sides of rectangle
-
-			LinkedList<Line2D> lineList = createLinesOfBox(i);
-
-			for(int j = 0; j < lineList.size(); j++) {
-				Line2D temp = lineList.get(j);
-				if(playerToTarget.intersectsLine(temp)) {
-					double dist = 0;
-
-					int intersectionPointInPixel [] = intersectionPoint(playerToTarget, lineList.get(j));
-
-					double intersectionPointInLatLon [] = 
-							game.getMap().fromPixelToLatLon(intersectionPointInPixel[0], intersectionPointInPixel[1]);
-
-					Point3D intersection = new Point3D(intersectionPointInLatLon[0], intersectionPointInLatLon[1]);
-
-					dist = new MyCoords().distance3d(game.getPlayer().getPoint(), intersection);
-
-					if(dist < minDistToBox) {
-						minDistToBox = dist;
-						indexOfNearestBoxInRoute = i;
-					}
-				}
-			}
-		}
-		return indexOfNearestBoxInRoute;// -1 mean that no boxes on the way to target, other number mean there box on the way
-	}
-
-	public double getDir() {
-		return dir;
-	}
-
+	
+	/**
+	 * Method for create Line.
+	 * @param p1 start point
+	 * @param p2 end point
+	 * @return Line2D
+	 */
 	private Line2D createLine(Point3D p1, Point3D p2) {
-		
-		double actualWidth = game.getMap().getWidthPercent();
-		double actualHeight = game.getMap().getHeightPercent();
-		
 		int coor1 [] = game.getMap().fromLatLonToPixel(p1.x(), p1.y());
 		int coor2 [] = game.getMap().fromLatLonToPixel(p2.x(), p2.y());
-		
-//		Line2D line = new Line2D.Float((int)(coor1[0] * actualWidth),
-//									   (int)(coor1[1] * actualHeight), 
-//									   (int)(coor2[0] * actualWidth), 
-//									   (int)(coor2[1] * actualHeight));
-		
 		Line2D line = new Line2D.Float(coor1[0], coor1[1], coor2[0], coor2[1]);
 		return line;
 	}
+
+	/**
+	 * This function check if there boxes on route of player.
+	 * @param source source point
+	 * @param target target point
+	 * @return true if no boxes in route, else false
+	 */
+	private boolean isGoodWay(Point3D source, Point3D target) {
+		int coorSource [] = game.getMap().fromLatLonToPixel(source.x(), source.y());
+		int coorTarget [] = game.getMap().fromLatLonToPixel(target.x(), target.y());
+		
+		Line2D playerToTarget = new Line2D.Float(coorSource[0],coorSource[1], coorTarget[0],coorTarget[1]);
+
+		for(int i = 0; i < game.getBoxList().size(); i++) {
+			
+			LinkedList<Line2D> lineList = createLinesOfBox(i);
+			
+			for(int j = 0; j < lineList.size(); j++) {
+				Line2D temp = lineList.get(j);
+				if(playerToTarget.intersectsLine(temp)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * This method return azimuth of player to next target.
+	 * @return
+	 */
+	public double getDir() {
+		return dir;
+	}
 	
+	/**
+	 * This method convert index from all numbers of angles to concrete angle. 
+	 * @param indexOfAngle 
+	 * @return array with box number and angle index.
+	 */
 	private int[] nextAngle(int indexOfAngle) {
 		int [] angleId = new int[2];
 		int temp = 1;
 		for(int i = 0; i < anglesList.size(); i++) {
-			for(int j = 0; j < anglesList.size(); j++) {
+			for(int j = 0; j < anglesList.get(i).size(); j++) {
 				if(temp == indexOfAngle) {
 					angleId[0] = i;
 					angleId[1] = j;
@@ -280,33 +252,10 @@ public class GameAlgo {
 		return angleId;
 	}
 
-	private int[] intersectionPoint(Line2D line1, Line2D line2) {
-		double p1x, p1y, p2x, p2y, q1x, q1y, q2x, q2y;
-		p1x = line1.getX1();
-		p1y = line1.getY1();
-		p2x = line1.getX2();
-		p2y = line1.getY2();
-
-		q1x = line2.getX1();
-		q1y = line2.getY1();
-		q2x = line2.getX2();
-		q2y = line2.getY2();
-
-		double a1 = p2y - p1y;
-		double b1 = p1x - p2x;
-		double c1 = a1 * p1x + b1 * p1y;
-
-		double a2 = q2y - q1y;
-		double b2 = q1x - q2x;
-		double c2 = a2 * q2x + b2 * q2y;
-
-		double delta = a1 * b2 - a2 * b1;
-
-		int [] arr = {(int)((b2 * c1 - b1 * c2) / delta), (int)((a1 * c2 - a2 * c1) / delta)};
-
-		return arr;
-	}
-
+	/**
+	 * This method increase boxes for create after this angles for player.
+	 * @return list list boxes
+	 */
 	private ArrayList<Box> createBigBox() {
 		ArrayList<Box> algoBox = new ArrayList<>();
 
@@ -319,14 +268,11 @@ public class GameAlgo {
 			Point3D temp1 = temp.getP1();
 			Point3D temp2 = temp.getP2();
 			
-//			temp1.add(-10 * xStep, 10 * yStep);
-//			temp2.add(10 * xStep, 10 * yStep);
-			
 			Point3D newP1 = new Point3D(temp1.x(), temp1.y());
 			Point3D newP2 = new Point3D(temp2.x(), temp2.y());
 			
-			newP1.add(-10 * xStep, -10 * yStep);
-			newP2.add(10 * xStep, 10 * yStep);
+			newP1.add(-35 * xStep, -35 * yStep);
+			newP2.add(35 * xStep, 35 * yStep);
 			
 			Box bigBox = new Box(newP1.x() + "", newP1.y()+"", newP2.x()+"", newP2.y()+"");
 			algoBox.add(bigBox);
@@ -334,6 +280,9 @@ public class GameAlgo {
 		return algoBox;
 	}
 
+	/**
+	 * This method create points of angles of bosex.
+	 */
 	private void getAnglesOfBoxes() {
 		ArrayList<Box> bigBox = createBigBox();
 		
@@ -346,39 +295,99 @@ public class GameAlgo {
 			boxPoints.add(new Point3D(temp.getP2().x(), temp.getP2().y()));
 			boxPoints.add(new Point3D(temp.getP2().x(), temp.getP1().y()));
 			anglesList.add(boxPoints);
-			
-			int [] A = new Map().fromLatLonToPixel(temp.getP1().x(), temp.getP1().y());
-			int [] B = new Map().fromLatLonToPixel(temp.getP1().x(), temp.getP2().y());
-			int [] C = new Map().fromLatLonToPixel(temp.getP2().x(), temp.getP2().y());
-			int [] D = new Map().fromLatLonToPixel(temp.getP2().x(), temp.getP1().y());
-			
-			System.out.println("A" + " " + Arrays.toString(A));
-			System.out.println("B" + " " + Arrays.toString(B));
-			System.out.println("C" + " " + Arrays.toString(C));
-			System.out.println("D" + " " + Arrays.toString(D));
 		}
 	}
 
+	/**
+	 *This method add fruits to target list of player.
+	 */
 	private void addFruitToList() {
 		for(int i = 0; i < game.getFruitList().size(); i++) {
 			targetList.add(game.getFruitList().get(i).getPoint());
 		}
 	}
 
+	/**
+	 *This method add pacmans to target list of player.
+	 */
 	private void addPacmansToList() {
 		for(int i = 0; i < game.getPacmanList().size(); i++) {
-			targetList.add(game.getPacmanList().get(i).getPoint());
+			if(canEat(game.getPacmanList().get(i).getPoint())) {
+				targetList.add(game.getPacmanList().get(i).getPoint());
+			}
 		}
 	}
 	
+	/**
+	 * This method check area of triangle.
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
+	 * @param x3
+	 * @param y3
+	 * @return area value
+	 */
+	private float area(int x1, int y1, int x2, int y2, int x3, int y3) { 
+		return (float)Math.abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2.0); 
+	} 
+
+	/**
+	 * Math method to check if point place into rectangle.
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
+	 * @param x3
+	 * @param y3
+	 * @param x4
+	 * @param y4
+	 * @param x pacman x
+	 * @param y pacman y
+	 * @return true if inside, false outside
+	 */
+	private boolean thisPointInRectangle(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int x, int y) { 
+		float A = area(x1, y1, x2, y2, x3, y3) + area(x1, y1, x4, y4, x3, y3); 
+		float A1 = area(x, y, x1, y1, x2, y2);
+		float A2 = area(x, y, x2, y2, x3, y3);
+		float A3 = area(x, y, x3, y3, x4, y4); 
+		float A4 = area(x, y, x1, y1, x4, y4); 
+
+		return (A == A1 + A2 + A3 + A4); 
+	}
+	
+	/**
+	 * This function check if pacman place out of boxes.
+	 * @param pacman pacman that we check
+	 * @return true if player can eat pacman, else false
+	 */
+	private boolean canEat(Point3D pacman) {
+		boolean flag = true;
+		for(int i = 0; i < anglesList.size(); i++) {
+			//System.out.println(i);
+			int [] a = game.getMap().fromLatLonToPixel(anglesList.get(i).get(0).x(), anglesList.get(i).get(0).y());
+			int [] b = game.getMap().fromLatLonToPixel(anglesList.get(i).get(1).x(), anglesList.get(i).get(1).y());
+			int [] c = game.getMap().fromLatLonToPixel(anglesList.get(i).get(2).x(), anglesList.get(i).get(2).y());
+			int [] d = game.getMap().fromLatLonToPixel(anglesList.get(i).get(3).x(), anglesList.get(i).get(3).y());
+			
+			int [] pac = game.getMap().fromLatLonToPixel(pacman.x(), pacman.y());
+			if(a[0] < pac[0] && b[0] > pac[0] && a[1] < pac[1] && d[1] > pac[1]) {
+				flag = false;
+			}
+		}
+		return flag;
+	}
+	
+	/**
+	 * This function check next target of player.
+	 * @return array with index of next target
+	 */
 	private int[] findNextTarget() {
-		int index[] = new int[3];
+		int index[] = new int[2];
 		double minRoute = Double.MAX_VALUE;
 		for(int i = 0; i < targetList.size(); i++) {
 			double tempDist;
-			int boxOnRoute = isGoodWay(game.getPlayer().getPoint(), targetList.get(i));
-			
-			if(boxOnRoute == -1) {//good way
+			if(isGoodWay(game.getPlayer().getPoint(), targetList.get(i))) {//good way
 				double [] temp = new MyCoords().azimuth_elevation_dist(game.getPlayer().getPoint(), targetList.get(i));
 				tempDist = temp[2];
 				if(tempDist < minRoute) {

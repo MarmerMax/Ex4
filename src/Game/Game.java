@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import GUI.Map;
+import Geom.Point3D;
 import Objects.Box;
 import Objects.Fruit;
 import Objects.Ghost;
@@ -70,8 +71,8 @@ public class Game {
 	 * This method create player for our game.
 	 * @param coor coordinates of player
 	 */
-	public void createPlayer(double [] coor) {
-		player = new Player(coor[0] + "", coor[1] + "", 0 + "");
+	public void createPlayer(Point3D temp) {
+		player = new Player(temp.x() + "", temp.y() + "", 0 + "");
 	}
 	
 	public Player getPlayer() {
